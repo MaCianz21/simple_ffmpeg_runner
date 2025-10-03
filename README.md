@@ -24,8 +24,10 @@ simple_ffmpeg_runner/
 
 ## Usage
 
-1. Place your video files in the `input/` folder
-2. Run the PowerShell script:
+1. Download ffmpeg from https://ffmpeg.org/download.html (choose the windows one since we're using a powershell script), you only need the essentials package for the binaries.
+2. Once downloaded the ffmpeg zip, find and extract ffmpeg.exe from the bin folder and place it with the files of this repository.
+3. Place your video files in the `input/` folder
+4. Run the PowerShell script:
    ```powershell
    .\run_ffmpeg.ps1
    ```
@@ -33,6 +35,7 @@ simple_ffmpeg_runner/
 ## Video Settings
 
 The script converts videos with these settings:
+
 - Video codec: H.264 (libx264)
 - Video bitrate: 1.5 Mbps
 - Audio codec: AAC
@@ -44,12 +47,16 @@ The script converts videos with these settings:
 - FFmpeg executable in the same directory as the script
 - PowerShell
 - Write permissions for creating output folders
+- If you have troubles running the script try changing the execution policy
+  ```
+  Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+  ```
 
 ## What It Does
 
 1. Creates `output/` and `converted/` folders if they don't exist
 2. Finds all video files in the `input/` folder
 3. Processes each video file with FFmpeg
-4. Saves converted files to `output/` with "_out" suffix
+4. Saves converted files to `output/` with "\_out" suffix
 5. Moves original files to `converted/` folder (only if conversion succeeds)
 6. Provides progress updates and completion status for each file
