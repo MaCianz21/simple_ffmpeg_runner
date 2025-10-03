@@ -9,21 +9,32 @@ $convertedFolder = Join-Path $PSScriptRoot "converted"
 New-Item -ItemType Directory -Force -Path $outputFolder | Out-Null
 New-Item -ItemType Directory -Force -Path $convertedFolder | Out-Null
 
-# Get the first video file
-$video = Get-ChildItem "$inputFolder\*.mp4","$inputFolder\*.avi","$inputFolder\*.mkv" -File | Select-Object -First 1
+# Get all video files
+$videos = Get-ChildItem "$inputFolder\*.mp4","$inputFolder\*.avi","$inputFolder\*.mkv" -File
 
-if ($null -eq $video) {
+if ($videos.Count -eq 0) {
     Write-Output "No video files found in $inputFolder"
     exit
 }
 
-# Output filename inside the "output" folder
-$outputFile = Join-Path $outputFolder ($video.BaseName + "_out.mp4")
+Write-Output "Found $($videos.Count) video file(s) to process"
 
-.\ffmpeg -i $video.FullName -c:v libx264 -b:v 1.5M -c:a aac -b:a 128k -crf 30 $outputFile
+# Process each video file
+foreach ($video in $videos) {
+    Write-Output "Processing: $($video.Name)"
+    
+    # Output filename inside the "output" folder
+    $outputFile = Join-Path $outputFolder ($video.BaseName + "_out.mp4")
+    
+    .\ffmpeg -i $video.FullName -c:v libx264 -b:v 1.5M -c:a aac -b:a 128k -crf 30 $outputFile
+    
+    if ($LASTEXITCODE -eq 0) {
+        # Move the original file into "converted" only if ffmpeg succeeded
+        Move-Item -Path $video.FullName -Destination $convertedFolder -Force
+        Write-Output "✓ Completed: $($video.Name) -> $($video.BaseName)_out.mp4"
+    } else {
+        Write-Output "✗ Failed to process: $($video.Name)"
+    }
+}
 
-# Move the original file into "converted"
-Move-Item -Path $video.FullName -Destination $convertedFolder -Force
-
-Write-Output "Done! Output saved to $outputFile"
-Write-Output "Original moved to $convertedFolder"
+Write-Output "All videos processed!"
